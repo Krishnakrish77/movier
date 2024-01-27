@@ -1,18 +1,16 @@
 import { View, Text, Pressable, ScrollView, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MagnifyingGlassIcon, ArrowLeftOnRectangleIcon } from 'react-native-heroicons/outline'
 import TrendingMovies from '../components/trendingMovies';
 import MovieList from '../components/movieList';
-import { StatusBar } from 'expo-status-bar';
 import { fetchTopRatedMovies, fetchTrendingMovies, fetchUpcomingMovies } from '../api/moviedb';
 import { useNavigation } from '@react-navigation/native';
 import Loading from '../components/loading';
 import { styles } from '../theme';
-import { getAuth, signOut } from "firebase/auth";
+// import { getAuth, signOut } from "firebase/auth";
+import { auth } from '../firebaseConfig';
+import Header from '../components/header';
 
 const ios = Platform.OS === 'ios';
-const auth = getAuth();
 
 export default function HomeScreen() {
 
@@ -20,7 +18,7 @@ export default function HomeScreen() {
   const [upcoming, setUpcoming] = useState([]);
   const [topRated, setTopRated] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
+  // const auth = getAuth();
 
   const handleLogout = async () => {
     signOut(auth).then(() => {
@@ -40,7 +38,8 @@ export default function HomeScreen() {
   const getTrendingMovies = async ()=>{
     const data = await fetchTrendingMovies();
     console.log('got trending', data.results.length)
-    if(data && data.results) setTrending(data.results);
+    const results = data.results?.filter( (item) => item.media_type !== "person" );
+    if(data && data.results) setTrending(results);
     setLoading(false)
   }
   const getUpcomingMovies = async ()=>{
@@ -59,21 +58,7 @@ export default function HomeScreen() {
   return (
     <View className="flex-1 bg-neutral-800">
       {/* search bar */}
-      <SafeAreaView className={ios? "-mb-2": "mb-3"}>
-        <StatusBar style="light" />
-        <View className="flex-row justify-between items-center mx-4">
-          <Pressable onPress={handleLogout}>
-            <ArrowLeftOnRectangleIcon size="30" color="white" />
-          </Pressable>  
-          <Text 
-            className="text-white text-3xl font-bold">
-              <Text style={styles.text}>M</Text>ovie<Text style={styles.text}>R</Text>
-          </Text>
-          <Pressable onPress={()=> navigation.navigate('Search')}>
-            <MagnifyingGlassIcon size="30" strokeWidth={2} color="white" />
-          </Pressable>
-        </View>
-      </SafeAreaView>
+      <Header/>
       {
         loading? (
           <Loading />
@@ -82,9 +67,11 @@ export default function HomeScreen() {
             showsVerticalScrollIndicator={false} 
             contentContainerStyle={{paddingBottom: 10}}
           >
+          {/* { auth.currentUser.displayName != null && 
           <Text className="flex-row justify-between items-center m-3">
-              <Text style={styles.text}>Welcome {auth.currentUser.displayName}!</Text>
+            <Text style={styles.text}>Welcome {auth.currentUser.displayName}!</Text>
           </Text>
+          } */}
             {/* Trending Movies Carousel */}
             { trending.length>0 && <TrendingMovies data={trending} /> }
 

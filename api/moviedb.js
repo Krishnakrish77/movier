@@ -4,10 +4,12 @@ import { apiKey } from "../constants";
 
 // endpoints
 const apiBaseUrl = 'https://api.themoviedb.org/3';
-const trendingMoviesEndpoint = `${apiBaseUrl}/trending/movie/day?api_key=${apiKey}`;
-const upcomingMoviesEndpoint = `${apiBaseUrl}/movie/upcoming?api_key=${apiKey}`;
-const topRatedMoviesEndpoint = `${apiBaseUrl}/movie/top_rated?api_key=${apiKey}`;
-const searchMoviesEndpoint = `${apiBaseUrl}/search/movie?api_key=${apiKey}`;
+const trendingMovieEndpoint = `${apiBaseUrl}/trending/movie/day?api_key=${apiKey}`;
+const trendingMoviesEndpoint = `${apiBaseUrl}/trending/all/day?api_key=${apiKey}`;
+const upcomingMoviesEndpoint = `${apiBaseUrl}/movie/upcoming?region=IN&api_key=${apiKey}`;
+const topRatedMoviesEndpoint = `${apiBaseUrl}/movie/top_rated?region=IN&api_key=${apiKey}`;
+const searchMovieEndpoint = `${apiBaseUrl}/search/movie?api_key=${apiKey}`;
+const searchMoviesEndpoint = `${apiBaseUrl}/search/multi?api_key=${apiKey}`;
 
 
 // endpoints with dynamic params
@@ -16,6 +18,13 @@ const searchMoviesEndpoint = `${apiBaseUrl}/search/movie?api_key=${apiKey}`;
 const movieDetailsEndpoint = id=> `${apiBaseUrl}/movie/${id}?api_key=${apiKey}`;
 const movieCreditsEndpoint = id=> `${apiBaseUrl}/movie/${id}/credits?api_key=${apiKey}`;
 const similarMoviesEndpoint = id=> `${apiBaseUrl}/movie/${id}/similar?api_key=${apiKey}`;
+const moviesWatchProvidersEndpoint = id=> `${apiBaseUrl}/movie/${id}/watch/providers?api_key=${apiKey}`;
+
+// tv
+const tvDetailsEndpoint = id=> `${apiBaseUrl}/tv/${id}?append_to_response=credits%2Csimilar&api_key=${apiKey}`;
+const tvCreditsEndpoint = id=> `${apiBaseUrl}/movie/${id}/credits?api_key=${apiKey}`;
+const tvMoviesEndpoint = id=> `${apiBaseUrl}/movie/${id}/similar?api_key=${apiKey}`;
+const tvWatchProvidersEndpoint = id=> `${apiBaseUrl}/tv/${id}/watch/providers?api_key=${apiKey}`;
 
 // person
 const personDetailsEndpoint = id=> `${apiBaseUrl}/person/${id}?api_key=${apiKey}`;
@@ -30,6 +39,7 @@ export const image185 = posterPath=> posterPath? 'https://image.tmdb.org/t/p/w18
 // fallback images 
 export const fallbackMoviePoster = 'https://img.myloview.com/stickers/white-laptop-screen-with-hd-video-technology-icon-isolated-on-grey-background-abstract-circle-random-dots-vector-illustration-400-176057922.jpg';
 export const fallbackPersonImage = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmUiF-YGjavA63_Au8jQj7zxnFxS_Ay9xc6pxleMqCxH92SzeNSjBTwZ0l61E4B3KTS7o&usqp=CAU';
+export const fallbackWatchProviderImage = 'https://cdn-icons-png.flaticon.com/512/8636/8636861.png';
 
 const apiCall = async (endpoint, params)=>{
     const options = {
@@ -68,6 +78,17 @@ export const fetchMovieCredits = (movieId)=>{
 }
 export const fetchSimilarMovies = (movieId)=>{
     return apiCall(similarMoviesEndpoint(movieId));
+}
+export const fetchMovieWatchProviders = (movieId)=>{
+    return apiCall(moviesWatchProvidersEndpoint(movieId));
+}
+
+// tv series apis
+export const fetchTVDetails = (id)=>{
+    return apiCall(tvDetailsEndpoint(id));
+}
+export const fetchTvWatchProviders = (Id)=>{
+    return apiCall(tvWatchProvidersEndpoint(Id));
 }
 
 // person screen apis

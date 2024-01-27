@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { styles } from '../theme';
+import { firestoreDB } from '../firebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
 
 // subscribe for more videos like this :)
 export default function SignUpScreen({ navigation: { navigate } }) {
@@ -15,7 +17,7 @@ export default function SignUpScreen({ navigation: { navigate } }) {
 
     const auth = getAuth();
     const handleUserCreation = async () => {
-        createUserWithEmailAndPassword(auth, email, password)
+        await createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             // Signed up 
             const user = userCredential.user;
@@ -23,11 +25,17 @@ export default function SignUpScreen({ navigation: { navigate } }) {
                 displayName: name
               }).then(() => {
                 // Profile updated!
-                // ...
-                alert(`User ${name} created. Logging in...`)
+                const data = {
+                  _id: user.uid,
+                  providerData: user.providerData[0]
+                }
+                setDoc(doc(firestoreDB, "users", user.uid), data).then(() => {
+                  alert(`User ${name} created.`)
+                });
               }).catch((error) => {
                 // An error occurred
-                alert(`Error occured in updating ${name}`);
+                console.log(error);
+                alert(`Error occured in creating the user ${name}`);
               });
             // alert(`User ${name} created. Logging in...`)
         })
@@ -35,7 +43,7 @@ export default function SignUpScreen({ navigation: { navigate } }) {
             const errorCode = error.code;
             alert(error);
         });
-        updateProfile
+        
     };
 
   return (

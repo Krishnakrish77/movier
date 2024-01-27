@@ -26,7 +26,8 @@ export default function SearchScreen() {
             }).then(data=>{
                 console.log('got search results');
                 setLoading(false);
-                if(data && data.results) setResults(data.results);
+                const results = data.results?.filter( (item) => item.media_type !== "person" );
+                if(data && data.results && results) setResults(results);
             })
         }else{
             setLoading(false);
@@ -49,7 +50,7 @@ export default function SearchScreen() {
                 className="pb-1 pl-6 flex-1 text-base font-semibold text-white tracking-wider" 
             />
             <Pressable 
-                onPress={()=> navigation.navigate('Home')}
+                onPress={()=> navigation.goBack()}
                 className="rounded-full p-3 m-1 bg-neutral-500" 
             >
                 <XMarkIcon size="25" color="white" />
@@ -85,7 +86,7 @@ export default function SearchScreen() {
                                             />
                                             <Text className="text-gray-300 ml-1">
                                                 {
-                                                    item.title.length>22? item.title.slice(0,22)+'...': item.title
+                                                    item.media_type == 'movie'? (item.title.length>22? item.title.slice(0,22)+'...': item.title) : item.media_type == 'tv'? (item.name.length>22? item.name.slice(0,22)+'...': item.name) : item.title
                                                 }
                                             </Text>
                                         </View>

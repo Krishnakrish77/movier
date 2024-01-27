@@ -1,5 +1,6 @@
 export const apiKey = '2d11111ea4050c8981f18cf5bac552be';
 
+export const secretKey = 'lnt2tWn6v3'; // Replace with your secret key
 
 // this data was used for the development of the app
 export const moviesData=[
