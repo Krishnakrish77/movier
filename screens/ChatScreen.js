@@ -47,7 +47,15 @@ const ChatScreen = ({ route }) => {
 
   const timestamp = (epoch) => {
     var dateTime = new Date(epoch * 1000);
-    return ('0' + dateTime.getHours()).slice(-2) + ':' + ('0' + dateTime.getMinutes()).slice(-2);
+    const year = dateTime.getFullYear();
+    const month = dateTime.toLocaleString('default', { month: 'short' });
+    const day = ('0' + dateTime.getDate()).slice(-2);
+
+    const hours = ('0' + dateTime.getHours()).slice(-2);
+    const minutes = ('0' + dateTime.getMinutes()).slice(-2);
+
+    // Format: DD-MM-YYYY HH:mm
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
   };
 
   const handleSend = async() => {
@@ -68,7 +76,6 @@ const ChatScreen = ({ route }) => {
     // Add the message to Firestore
     const messagesRef = collection(firestoreDB, `groups/${route.params.groupId}/messages`);
     await addDoc(messagesRef, message);
-    // setMessages((prevMessages) => [newMessageObj, ...prevMessages]);
     setNewMessage('');
   };
 
