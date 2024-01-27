@@ -1,4 +1,4 @@
-import { View, Text, Image, Dimensions, Pressable, ScrollView, Platform, Modal, FlatList, TouchableOpacity } from 'react-native'
+import { View, Text, Image, Dimensions, Pressable, ScrollView, Platform, Modal, FlatList } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -13,7 +13,7 @@ import Loading from '../components/loading';
 import WatchProviders from '../components/watchproviders';
 import { getAuth } from "firebase/auth";
 import { firestoreDB } from '../firebaseConfig';
-import { collection, query, addDoc, doc, onSnapshot, serverTimestamp, getDoc, updateDoc, orderBy } from 'firebase/firestore';
+import { collection, query, addDoc, onSnapshot, serverTimestamp, orderBy } from 'firebase/firestore';
 
 const ios = Platform.OS == 'ios';
 const topMargin = ios? '':' mt-3';

@@ -9,7 +9,7 @@ import { firestoreDB } from '../firebaseConfig';
 import { collection, query, setDoc, doc, onSnapshot, serverTimestamp, where, getDoc, updateDoc, arrayUnion, orderBy, limit, getDocs } from 'firebase/firestore';
 import { decrypt } from '../utils/cryptoUtils';
 import Loading from '../components/loading';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get("window");
 
@@ -25,37 +25,69 @@ const GroupScreen = ({ navigation }) => {
   const loadGroups = () => {
     setLoading(true);
     const userUid = auth.currentUser.uid;
-
-    const q = query(collection(firestoreDB, `users/${userUid}/groups`), orderBy('joinedAt','desc'));
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
+  
+    // Query to get the user's groups sorted by joinedAt
+    const groupsQuery = query(collection(firestoreDB, `users/${userUid}/groups`), orderBy('joinedAt', 'desc'));
+  
+    // Set up a snapshot listener for the user's groups
+    const unsubscribeGroups = onSnapshot(groupsQuery, async (snapshot) => {
       const groupsData = await Promise.all(snapshot.docs.map(async (doc) => {
         const groupData = { id: doc.id, ...doc.data() };
-        // Fetch the last message for each group
-        const lastMessageQuery = query(collection(firestoreDB, `groups/${groupData.id}/messages`), orderBy('sentAt','desc'), limit(1));
-        const lastMessageSnapshot = await getDocs(lastMessageQuery);
-        if (!lastMessageSnapshot.empty) {
-          // If there is a last message, add it to the groupData
-          groupData.lastMessage = lastMessageSnapshot.docs[0].data();
-        }
-        return groupData;
+  
+        // Query to get the last message for each group, ordered by sentAt in descending order
+        const lastMessageQuery = query(collection(firestoreDB, `groups/${groupData.id}/messages`), orderBy('sentAt', 'desc'), limit(1));
+  
+        // Set up a snapshot listener for the last message of each group
+        const unsubscribeLastMessage = onSnapshot(lastMessageQuery, (lastMessageSnapshot) => {
+          if (!lastMessageSnapshot.empty) {
+            // If there is a last message, update the lastMessage property in groupData
+            groupData.lastMessage = lastMessageSnapshot.docs[0].data();
+          } else {
+            // If there is no last message, set lastMessage to null or handle it as needed
+            groupData.lastMessage = null;
+          }
+  
+          // Update the state with the modified groupData
+          setGroups((prevGroups) => {
+            // Find the index of the groupData in the array
+            const index = prevGroups.findIndex((group) => group.id === groupData.id);
+  
+            // If found, replace the old groupData with the modified one
+            if (index !== -1) {
+              return [...prevGroups.slice(0, index), groupData, ...prevGroups.slice(index + 1)];
+            }
+  
+            // If not found, simply return the previous array
+            return prevGroups;
+          });
+        });
+        
+        return { ...groupData, unsubscribeLastMessage };
       }));
-
       setLoading(false);
+      // Update the state with the modified groupsData
       setGroups(groupsData);
     });
+  
+    // Return a function to unsubscribe both group and last message listeners
     return () => {
-      unsubscribe();
+      unsubscribeGroups();
+      groupsData.forEach((groupData) => {
+        groupData.unsubscribeLastMessage();
+      });
     };
-  }
+  };
+  
+  // UseEffect hook to load groups and set up listeners when the component mounts
   useEffect(() => {
     const unsubscribeLoadGroups = loadGroups();
-
+  
     // Return another function to unsubscribe when the component unmounts
     return () => {
       unsubscribeLoadGroups();
     };
   }, []);
-
+  
   const handleCreateGroup = async () => {
     const userUid = auth.currentUser.uid;
     // const firestoreDB = getFirestore();

@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Pressable, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getAuth } from "firebase/auth";
 import { firestoreDB } from '../firebaseConfig';
-import { collection, query, addDoc, doc, onSnapshot, serverTimestamp, getDoc, orderBy } from 'firebase/firestore';
+import { collection, query, addDoc, doc, onSnapshot, getDoc, orderBy } from 'firebase/firestore';
 import MessageCard from '../components/moviecard';
 
 const ios = Platform.OS === 'ios';

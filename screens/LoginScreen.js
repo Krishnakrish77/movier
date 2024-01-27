@@ -17,8 +17,6 @@ const LoginScreen = ({ navigation: { navigate } }) => {
       .then((userCredential) => {
         // Signed in 
         const user = userCredential.user;
-        console.log("Logged in!");
-        console.log(user);
       })
       .catch((error) => {
         const errorCode = error.code;

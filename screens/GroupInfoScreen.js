@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeftIcon, ClipboardDocumentIcon } from 'react-native-heroicons/outline';
 import { MaterialIcons } from '@expo/vector-icons';
 import { firestoreDB } from '../firebaseConfig';
-import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, runTransaction, updateDoc } from "firebase/firestore";
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 import { encrypt } from '../utils/cryptoUtils';
@@ -60,21 +60,54 @@ const GroupInfoScreen = () => {
       fetchGroupInfo();
   },[groupId]);
 
-  const handleSave = async () => {
-    if(groupInfo.name != newGroupName && newGroupName != undefined && newGroupName != ''){
-    setGroupInfo((prevGroupInfo) => ({
-        ...prevGroupInfo,
-        name: newGroupName,
-    }));
-    const groupMembersDocRef = doc(firestoreDB, 'groups', groupId);
-    await updateDoc(groupMembersDocRef, { "name": newGroupName });
+//   const handleSave = async () => {
+//     if(groupInfo.name != newGroupName && newGroupName != undefined && newGroupName != ''){
+//     setGroupInfo((prevGroupInfo) => ({
+//         ...prevGroupInfo,
+//         name: newGroupName,
+//     }));
+//     const groupMembersDocRef = doc(firestoreDB, 'groups', groupId);
+//     await updateDoc(groupMembersDocRef, { "name": newGroupName });
 
-    // Update the group name in the user's groups
-    const userGroupsDocRef = doc(firestoreDB, 'users', auth.currentUser.uid, 'groups', groupId);
-    await updateDoc(userGroupsDocRef, { "name": newGroupName });
+//     // Update the group name in the all user's groups
+//     const userGroupsDocRef = doc(firestoreDB, 'users', auth.currentUser.uid, 'groups', groupId);
+//     await updateDoc(userGroupsDocRef, { "name": newGroupName });
+//     }
+//     // Disable edit mode after saving
+//     setEditMode(false);
+//   };
+
+  const handleSave = async () => {
+    if (groupInfo.name !== newGroupName && newGroupName !== undefined && newGroupName !== '') {
+      try {
+        // Use a transaction to update group name in group and each user's groups
+        await runTransaction(firestoreDB, async (transaction) => {
+            const groupDocRef = doc(firestoreDB, 'groups', groupId);
+            const groupDoc = await transaction.get(groupDocRef);
+    
+            if (groupDoc.exists()) {
+                transaction.update(groupDocRef, { name: newGroupName });
+            }
+  
+            // Update group name for each user in the group
+            const usersCollectionRef = collection(firestoreDB, 'users');
+            for (const userId of groupInfo.users) {
+                const userDocRef = doc(usersCollectionRef, userId, 'groups', groupId);
+                transaction.update(userDocRef, { name: newGroupName });
+            }
+        });
+  
+        setGroupInfo((prevGroupInfo) => ({
+            ...prevGroupInfo,
+            name: newGroupName,
+        }));
+        // Disable edit mode after saving    
+        setEditMode(false);
+      } catch (error) {
+        console.error('Error updating group name:', error.message);
+        // Handle the error appropriately
+      }
     }
-    // Disable edit mode after saving
-    setEditMode(false);
   };
 
   const handleDelete = async () => {
