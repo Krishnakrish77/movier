@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeftIcon, ClipboardDocumentIcon } from 'react-native-heroicons/outline';
 import { MaterialIcons } from '@expo/vector-icons';
 import { firestoreDB } from '../firebaseConfig';
-import { arrayRemove, collection, doc, getDoc, runTransaction, updateDoc } from "firebase/firestore";
+import { arrayRemove, collection, doc, getDoc, runTransaction } from "firebase/firestore";
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 import { encrypt } from '../utils/cryptoUtils';
@@ -93,54 +93,107 @@ const GroupInfoScreen = () => {
     }
   };
 
+  const deleteGroup = async () => {
+    try {
+        await runTransaction(firestoreDB, async (transaction) => {
+          // Fetch the list of users in the group
+          const groupUsersRef = doc(firestoreDB, 'groups', groupId);
+          const groupUsersSnapshot = await getDoc(groupUsersRef);
+          const groupUsers = groupUsersSnapshot.data().users
+
+          // Delete the group from the groups subcollection for each user
+          for (const userId of groupUsers) {
+            const userGroupsDocRef = doc(firestoreDB, 'users', userId, 'groups', groupId);
+            transaction.delete(userGroupsDocRef);
+          }
+
+          // Delete the group document
+          const groupDocRef = doc(firestoreDB, 'groups', groupId);
+          transaction.delete(groupDocRef);
+        });
+
+        // Navigate to the Groups screen or any other screen
+        navigation.navigate('Groups');
+      } catch (error) {
+          console.log(error);
+          alert('An error occured while trying to delete the group');
+      }
+  }
+
   const handleDelete = async () => {
-    Alert.alert(
-        '',
-        'Are you sure that you want to delete this group?',  
-        [
-           {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-           {text: 'OK', onPress: () => console.log('OK Pressed')},
-        ],
-        { cancelable: false }
-   )
+    if(Platform.OS == 'web') {
+        if (confirm('Are you sure that you want to delete this group?')) {
+            // Delete Group
+            await deleteGroup();
+          } else {
+            // Do nothing!
+            console.log('User Operation Cancelled');
+          }
+    }
+    else {
+        Alert.alert(
+            '',
+            'Are you sure that you want to delete this group?',
+            [
+                { text: 'Cancel', onPress: () => console.log('User Operation Cancelled'), style: 'cancel' },
+                {
+                text: 'OK',
+                onPress: async () => { await deleteGroup(); },
+                },
+            ],
+            { cancelable: false }
+        );
+    }
+  };
+
+  const leaveGroup = async () => {
+    try {
+        await runTransaction(firestoreDB, async (transaction) => {
+          // Remove the user from the group's users array
+          const groupDocRef = doc(firestoreDB, 'groups', groupId);
+          const groupDoc = await transaction.get(groupDocRef);
+          if (groupDoc.exists()) {
+            transaction.update(groupDocRef, {
+              users: arrayRemove(auth.currentUser.uid),
+            });
+          }
+
+          // Delete the group from the user's groups subcollection
+          const userGroupsDocRef = doc(firestoreDB, 'users', auth.currentUser.uid, 'groups', groupId);
+          transaction.delete(userGroupsDocRef);
+        });
+
+        // Navigate to the Groups screen
+        navigation.navigate('Groups');
+      } catch (error) {
+        alert('An error occured while trying to leave the group');
+      }
   };
 
   const handleLeaveGroup = async () => {
-    Alert.alert(
-      '',
-      'Are you sure that you want to leave this group?',
-      [
-        { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
-        {
-          text: 'OK',
-          onPress: async () => {
-  
-            try {
-              await runTransaction(firestoreDB, async (transaction) => {
-                // Remove the user from the group's users array
-                const groupDocRef = doc(firestoreDB, 'groups', groupId);
-                const groupDoc = await transaction.get(groupDocRef);
-                if (groupDoc.exists()) {
-                  transaction.update(groupDocRef, {
-                    users: arrayRemove(auth.currentUser.uid),
-                  });
-                }
-  
-                // Delete the group from the user's groups subcollection
-                const userGroupsDocRef = doc(firestoreDB, 'users', auth.currentUser.uid, 'groups', groupId);
-                transaction.delete(userGroupsDocRef);
-              });
-  
-              // Navigate to the Groups screen
-              navigation.navigate('Groups');
-            } catch (error) {
-              alert('There was an error occured while trying to leave the group');
-            }
-          },
-        },
-      ],
-      { cancelable: false }
-    );
+    if(Platform.OS == 'web') {
+        if (confirm('Are you sure that you want to leave this group?')) {
+            // Leave Group
+            await leaveGroup();
+          } else {
+            // Do nothing!
+            console.log('User Operation Cancelled');
+          }
+    }
+    else {
+        Alert.alert(
+        '',
+        'Are you sure that you want to leave this group?',
+        [
+            { text: 'Cancel', onPress: () => console.log('User Operation Cancelled'), style: 'cancel' },
+            {
+            text: 'OK',
+            onPress: async () => { await leaveGroup(); },
+            },
+        ],
+        { cancelable: false }
+        );
+    }
   };
 
   return (

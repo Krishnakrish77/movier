@@ -140,7 +140,6 @@ const GroupScreen = ({ navigation }) => {
           const groupDocRef = doc(collection(firestoreDB, 'groups'), groupId);
           const docSnapshot = await getDoc(groupDocRef);
           if(docSnapshot.exists()){
-            console.log(docSnapshot.data());
             // Add the user to the group
             await updateDoc(groupDocRef, {
               users: arrayUnion(userUid)
