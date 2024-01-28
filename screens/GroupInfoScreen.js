@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeftIcon, ClipboardDocumentIcon } from 'react-native-heroicons/outline';
 import { MaterialIcons } from '@expo/vector-icons';
 import { firestoreDB } from '../firebaseConfig';
-import { collection, doc, getDoc, runTransaction, updateDoc } from "firebase/firestore";
+import { arrayRemove, collection, doc, getDoc, runTransaction, updateDoc } from "firebase/firestore";
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 import { encrypt } from '../utils/cryptoUtils';
@@ -60,23 +60,6 @@ const GroupInfoScreen = () => {
       fetchGroupInfo();
   },[groupId]);
 
-//   const handleSave = async () => {
-//     if(groupInfo.name != newGroupName && newGroupName != undefined && newGroupName != ''){
-//     setGroupInfo((prevGroupInfo) => ({
-//         ...prevGroupInfo,
-//         name: newGroupName,
-//     }));
-//     const groupMembersDocRef = doc(firestoreDB, 'groups', groupId);
-//     await updateDoc(groupMembersDocRef, { "name": newGroupName });
-
-//     // Update the group name in the all user's groups
-//     const userGroupsDocRef = doc(firestoreDB, 'users', auth.currentUser.uid, 'groups', groupId);
-//     await updateDoc(userGroupsDocRef, { "name": newGroupName });
-//     }
-//     // Disable edit mode after saving
-//     setEditMode(false);
-//   };
-
   const handleSave = async () => {
     if (groupInfo.name !== newGroupName && newGroupName !== undefined && newGroupName !== '') {
       try {
@@ -104,7 +87,7 @@ const GroupInfoScreen = () => {
         // Disable edit mode after saving    
         setEditMode(false);
       } catch (error) {
-        console.error('Error updating group name:', error.message);
+        alert('Error updating group name:', error.message);
         // Handle the error appropriately
       }
     }
@@ -124,14 +107,40 @@ const GroupInfoScreen = () => {
 
   const handleLeaveGroup = async () => {
     Alert.alert(
-        '',
-        'Are you sure that you want to leave this group?',  
-        [
-           {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-           {text: 'OK', onPress: () => console.log('OK Pressed')},
-        ],
-        { cancelable: false }
-   )
+      '',
+      'Are you sure that you want to leave this group?',
+      [
+        { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+        {
+          text: 'OK',
+          onPress: async () => {
+  
+            try {
+              await runTransaction(firestoreDB, async (transaction) => {
+                // Remove the user from the group's users array
+                const groupDocRef = doc(firestoreDB, 'groups', groupId);
+                const groupDoc = await transaction.get(groupDocRef);
+                if (groupDoc.exists()) {
+                  transaction.update(groupDocRef, {
+                    users: arrayRemove(auth.currentUser.uid),
+                  });
+                }
+  
+                // Delete the group from the user's groups subcollection
+                const userGroupsDocRef = doc(firestoreDB, 'users', auth.currentUser.uid, 'groups', groupId);
+                transaction.delete(userGroupsDocRef);
+              });
+  
+              // Navigate to the Groups screen
+              navigation.navigate('Groups');
+            } catch (error) {
+              alert('There was an error occured while trying to leave the group');
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   return (
