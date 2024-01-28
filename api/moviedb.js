@@ -19,6 +19,7 @@ const movieDetailsEndpoint = id=> `${apiBaseUrl}/movie/${id}?api_key=${apiKey}`;
 const movieCreditsEndpoint = id=> `${apiBaseUrl}/movie/${id}/credits?api_key=${apiKey}`;
 const similarMoviesEndpoint = id=> `${apiBaseUrl}/movie/${id}/similar?api_key=${apiKey}`;
 const moviesWatchProvidersEndpoint = id=> `${apiBaseUrl}/movie/${id}/watch/providers?api_key=${apiKey}`;
+const moviesVideosEndpoint = id=> `${apiBaseUrl}/movie/${id}/videos?api_key=${apiKey}`;
 
 // tv
 const tvDetailsEndpoint = id=> `${apiBaseUrl}/tv/${id}?append_to_response=credits%2Csimilar&api_key=${apiKey}`;
@@ -81,6 +82,9 @@ export const fetchSimilarMovies = (movieId)=>{
 }
 export const fetchMovieWatchProviders = (movieId)=>{
     return apiCall(moviesWatchProvidersEndpoint(movieId));
+}
+export const fetchMovieVideos = (movieId)=>{
+    return apiCall(moviesVideosEndpoint(movieId));
 }
 
 // tv series apis

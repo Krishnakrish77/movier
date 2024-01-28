@@ -214,7 +214,7 @@ const GroupInfoScreen = () => {
             )
         }
       </SafeAreaView>
-        <View className="mx-4">
+        <View className="m-4">
             <View className="p-2 items-center">
                 <MaterialIcons name="group" size={60} color="black" style={{backgroundColor:'#eee', borderRadius: 50, padding: 16}}/>
                 { editMode ? (
@@ -245,10 +245,10 @@ const GroupInfoScreen = () => {
                     )
                 }
             </View>
-            <View className="h-full bg-slate-200 px-6 pt-6 rounded-t-3xl justify-center">
+            <View className="h-screen bg-white px-6 pt-6 rounded-t-3xl justify-center">
                 <Text className="font-bold text-lg self-center">Invite Code</Text>
-                <View className="flex-row items-center justify-center bg-zinc-500 rounded-lg p-4">
-                    <Text className="text-white items-center px-2">{inviteCode}</Text>
+                <View className="flex-row items-center justify-center bg-zinc-500 rounded-lg p-4 truncate">
+                    <Text className="text-white px-2 whitespace-nowrap max-w-[90%]">{inviteCode}</Text>
                     <Pressable className="px-2" onPress={copyToClipboard}>
                         <ClipboardDocumentIcon size="24" color="white" />
                     </Pressable>

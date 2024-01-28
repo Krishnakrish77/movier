@@ -1,5 +1,5 @@
 import { View, Text, Image, Dimensions, Pressable, ScrollView, Platform, Modal, FlatList } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
@@ -7,13 +7,14 @@ import { HeartIcon, ShareIcon, PaperAirplaneIcon, XMarkIcon, CheckCircleIcon } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Cast from '../components/cast';
 import MovieList from '../components/movieList';
-import { fallbackMoviePoster, fetchMovieCredits, fetchMovieDetails, fetchSimilarMovies, fetchMovieWatchProviders, image500, fetchTVDetails, fetchTvWatchProviders } from '../api/moviedb';
+import { fallbackMoviePoster, fetchMovieCredits, fetchMovieDetails, fetchSimilarMovies, fetchMovieWatchProviders, image500, fetchTVDetails, fetchTvWatchProviders, fetchMovieVideos } from '../api/moviedb';
 import { styles, theme } from '../theme';
 import Loading from '../components/loading';
 import WatchProviders from '../components/watchproviders';
 import { getAuth } from "firebase/auth";
 import { firestoreDB } from '../firebaseConfig';
 import { collection, query, addDoc, onSnapshot, serverTimestamp, orderBy } from 'firebase/firestore';
+import YoutubePlayer from "react-native-youtube-iframe";
 
 const ios = Platform.OS == 'ios';
 const topMargin = ios? '':' mt-3';
@@ -29,6 +30,7 @@ export default function MovieScreen() {
   const [cast, setCast] = useState([]);
   const [similarMovies, setSimilarMovies] = useState([]);
   const [watchProviders, setWatchProviders] = useState([]);
+  const [trailer, setTrailer] = useState(null);
   const [groups, setGroups] = useState([]);
   const [isFavourite, toggleFavourite] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,8 @@ export default function MovieScreen() {
   const [tvWatchProviders, setTvWatchProviders] = useState([]);
   const unsubscribeRef = useRef(null);
   const auth = getAuth();
-
+  const [playing, setPlaying] = useState(false);
+  const onStateChange = useCallback((state) => { if (state === "ended") { setPlaying(false); }}, []);
 
   useEffect(()=>{
     setLoading(true);
@@ -51,6 +54,7 @@ export default function MovieScreen() {
       getMovieCredits(item.id);
       getSimilarMovies(item.id);
       getMovieWatchProviders(item.id);
+      getMovieVideos(item.id);
     }
     
   },[item]);
@@ -76,6 +80,16 @@ export default function MovieScreen() {
     console.log('got similar movies');
     if(data && data.results){
         setSimilarMovies(data.results);
+    }
+  }
+  const getMovieVideos = async id=>{
+    const data = await fetchMovieVideos(id);
+    console.log('got movie videos');
+    if(data && data.results) {
+        const trailerKey = data.results.find((item) => item.type === "Trailer" && item.site === "YouTube" && item.official);
+        if(trailerKey){
+          setTrailer(trailerKey.key);
+        }
     }
   }
   const getMovieWatchProviders = async id=>{
@@ -281,10 +295,22 @@ export default function MovieScreen() {
             { 
                 watchProviders.length>0 ? <WatchProviders watchproviders={watchProviders} /> : tvWatchProviders.length>0 ? <WatchProviders watchproviders={tvWatchProviders} /> : null
             }
-            <Pressable className="p-4" onPress={shareToGroups}>
+            <Pressable className="p-3" onPress={shareToGroups}>
                 <ShareIcon size="26" color={isFavourite? theme.background: 'white'} />
             </Pressable>
      </View>
+
+      {/* trailer */}
+      { trailer &&  (
+      <View className="mt-2">
+        <YoutubePlayer
+                height={260}
+                play={playing}
+                videoId={trailer}
+                onChangeState={onStateChange}
+        />
+      </View>
+      )}
       
       {/* cast */}
       {
@@ -295,15 +321,15 @@ export default function MovieScreen() {
       {
         movie?.id ? movie?.id && similarMovies.length>0 && <MovieList title={'Similar Movies'} hideSeeAll={true} data={similarMovies} /> : tv?.id ? tv?.similar?.results.length>0 && <MovieList title={'Similar Series'} hideSeeAll={true} data={tv.similar.results} /> : null
       }
-    <Modal animationType="slide" 
+      <Modal animationType="slide" 
               transparent visible={isModalVisible}  
               presentationStyle="overFullScreen" 
               onRequestClose={toggleShareToGroups}
               > 
           <View className="flex-1 items-center justify-center bg-current"> 
-              <View className="justify-center items-center bg-white rounded-lg w-80 h-80">
-              <Text className="font-bold text-lg p-2">SHARE TO GROUPS</Text>
-                <View className="flex-row justify-center items-center px-6">
+              <View className="py-6 items-center bg-white rounded-lg w-80 h-96">
+              <Text className="font-bold text-lg p-2">Share to Groups</Text>
+                <View className="flex-row items-center px-4">
                 {
                 loading? (
                     <Loading />
@@ -312,11 +338,11 @@ export default function MovieScreen() {
                     data={groups}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
-                    <Pressable className="bg-gray-800 mb-0.5 rounded-md" onPress={() => toggleSelection(item.id)}>
-                        <View className="flex-row justify-between p-2">
-                            <Text className="px-1 text-lg font-bold text-white">{item.name}</Text>
+                    <Pressable className="bg-gray-950 mb-0.5 rounded-md" onPress={() => toggleSelection(item.id)}>
+                        <View className="flex-row justify-between p-2 w-64">
+                            <Text className="px-2 text-lg font-bold text-white">{item.name}</Text>
                             {selectedGroups.includes(item.id) && (
-                            <View className="flex-row items-center">
+                            <View className="items-center">
                                 <CheckCircleIcon size="28" color='green'/>
                             </View>
                             )}
@@ -327,7 +353,7 @@ export default function MovieScreen() {
                   )
                 }
                 </View>
-                <View className="flex-row items-center justify-center py-2">
+                <View className="flex-row py-2 absolute bottom-8">
                   <Pressable className="bg-red-400 rounded-xl p-2 mx-4" onPress={toggleShareToGroups}>
                     {/* <Text className="font-xl font-bold text-center text-gray-700 p-3">Cancel</Text> */}
                     <XMarkIcon size="24" strokeWidth={2.5} color="white"/>

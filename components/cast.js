@@ -5,7 +5,7 @@ var {width, height} = Dimensions.get('window');
 
 export default function Cast({cast, navigation}) {
   return (
-    <View className="my-6">
+    <View className="mb-6">
         <Text className="text-white text-lg mx-4 mb-5">Top Cast</Text>
         <ScrollView 
             horizontal

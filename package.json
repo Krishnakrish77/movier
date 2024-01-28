@@ -51,7 +51,10 @@
     "react-native-snap-carousel": "^4.0.0-beta.6",
     "react-native-star-rating": "^1.1.0",
     "react-native-svg": "14.1.0",
-    "react-native-web": "~0.19.6"
+    "react-native-web": "~0.19.6",
+    "react-native-web-webview": "^1.0.2",
+    "react-native-webview": "13.6.4",
+    "react-native-youtube-iframe": "^2.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
