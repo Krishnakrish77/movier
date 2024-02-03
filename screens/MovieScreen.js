@@ -15,6 +15,7 @@ import { getAuth } from "firebase/auth";
 import { firestoreDB } from '../firebaseConfig';
 import { collection, query, addDoc, onSnapshot, serverTimestamp, orderBy } from 'firebase/firestore';
 import YoutubePlayer from "react-native-youtube-iframe";
+import { CircularProgress } from 'react-native-circular-progress';
 
 const ios = Platform.OS == 'ios';
 const topMargin = ios? '':' mt-3';
@@ -244,16 +245,60 @@ export default function MovieScreen() {
                     movie?.title? movie?.title : (tv?.name? tv?.name : null)
                 }
         </Text>
+        
+        <View className="flex-row items-center justify-center space-x-4">
 
+          {/* Popularity Component */}
+          {
+              movie?.vote_average ? 
+          <View className="flex items-center justify-center">
+            <CircularProgress
+              fill={Math.round(movie?.vote_average * 10)}
+              size={50}
+              width={6}
+              rotation={0}
+              tintColor={Math.round(movie?.vote_average * 10) > 80 ? '#14A44D' : Math.round(movie?.vote_average * 10) > 60 ? '#E4A11B' : '#DC4C64' }
+              backgroundColor="#3d5875"
+            >
+              {
+                (vote_average) => (
+                  <Text className="text-white font-semibold">
+                    { `${vote_average}%` }
+                  </Text>
+                )
+              }
+              </CircularProgress>
+          </View> : tv?.vote_average ?
+          <View className="flex items-center justify-center">
+            <CircularProgress
+                fill={Math.round(tv?.vote_average * 10)}
+                size={50}
+                width={6}
+                rotation={0}
+                tintColor={Math.round(tv?.vote_average * 10) >= 80 ? '#14A44D' : Math.round(tv?.vote_average * 10) >= 60 ? '#E4A11B' : '#DC4C64' }
+                backgroundColor="#3d5875"
+              >
+                {
+                  (vote_average) => (
+                    <Text className="text-white font-semibold">
+                      { `${vote_average}%` }
+                    </Text>
+                  )
+                }
+              </CircularProgress>
+        </View> : null
+          }
+          <View className="flex flex-col">
         {/* status, release year, runtime */}
         {
             movie?.id? (
-                <Text className="text-neutral-400 font-semibold text-base text-center">
+                <Text className="text-neutral-400 font-semibold text-base">
                     {movie?.status} • {movie?.release_date?.split('-')[0] || 'N/A'} • {movie?.runtime} min
                 </Text>
             ): tv?.id? (
-              <Text className="text-neutral-400 font-semibold text-base text-center">
-                    {tv?.status} • {tv?.first_air_date?.split('-')[0] == tv?.last_air_date?.split('-')[0] ? tv?.last_air_date?.split('-')[0] : tv?.first_air_date?.split('-')[0] + '-' + tv?.last_air_date?.split('-')[0] || 'N/A'} • {tv?.number_of_seasons} {tv?.number_of_seasons == 1 ? 'season' : 'seasons'} • {tv?.number_of_episodes} episodes
+              <Text className="text-neutral-400 font-semibold text-base">
+                    {tv?.status} • {tv?.first_air_date?.split('-')[0] == tv?.last_air_date?.split('-')[0] ? tv?.last_air_date?.split('-')[0] : tv?.first_air_date?.split('-')[0] + '-' + tv?.last_air_date?.split('-')[0] || 'N/A'}
+                    {"\n"}{tv?.number_of_seasons} {tv?.number_of_seasons == 1 ? 'season' : 'seasons'} • {tv?.number_of_episodes} episodes
               </Text>
             ): null
         }
@@ -261,7 +306,7 @@ export default function MovieScreen() {
 
         
         {/* genres  */}
-        <View className="flex-row justify-center mx-4 space-x-2">
+        <View className="flex-row flex-wrap space-x-2">
             {
               movie?.genres ?
                 movie?.genres?.map((genre,index)=>{
@@ -281,6 +326,8 @@ export default function MovieScreen() {
                   )
               }) : null)
             }
+        </View>
+        </View>
         </View>
 
         {/* description */}
