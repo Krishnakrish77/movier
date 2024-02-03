@@ -25,13 +25,13 @@ const GroupScreen = ({ navigation }) => {
   const loadGroups = () => {
     setLoading(true);
     const userUid = auth.currentUser.uid;
-  
+    let groupsData
     // Query to get the user's groups sorted by joinedAt
     const groupsQuery = query(collection(firestoreDB, `users/${userUid}/groups`), orderBy('joinedAt', 'desc'));
   
     // Set up a snapshot listener for the user's groups
     const unsubscribeGroups = onSnapshot(groupsQuery, async (snapshot) => {
-      const groupsData = await Promise.all(snapshot.docs.map(async (doc) => {
+      groupsData = await Promise.all(snapshot.docs.map(async (doc) => {
         const groupData = { id: doc.id, ...doc.data() };
   
         // Query to get the last message for each group, ordered by sentAt in descending order
