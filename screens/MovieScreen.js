@@ -288,7 +288,7 @@ export default function MovieScreen() {
               </CircularProgress>
         </View> : null
           }
-          <View className="flex flex-col">
+          <View className="flex flex-col w-2/3">
         {/* status, release year, runtime */}
         {
             movie?.id? (
