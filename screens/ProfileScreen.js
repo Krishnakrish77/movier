@@ -1,10 +1,10 @@
 // screens/ProfileScreen.js
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, Platform } from 'react-native';
 import { UserCircleIcon, EnvelopeIcon } from 'react-native-heroicons/solid'
 import { MaterialIcons } from '@expo/vector-icons';
-import { getAuth, signOut, updateProfile } from "firebase/auth";
+import { getAuth, updateProfile } from "firebase/auth";
 import { useNavigation } from '@react-navigation/native';
 import Header from '../components/header';
 import { collection, doc, getDocs, query, runTransaction, updateDoc, where } from 'firebase/firestore';

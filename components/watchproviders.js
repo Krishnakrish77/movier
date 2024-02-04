@@ -1,7 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native'
 import React from 'react'
 import { fallbackWatchProviderImage, image185 } from '../api/moviedb'
-var {width, height} = Dimensions.get('window');
 
 const WatchProviders = ({watchproviders}) => {
   return (

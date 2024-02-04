@@ -1,12 +1,9 @@
-import { View, Text, Pressable, ScrollView, Platform } from 'react-native'
+import { View, ScrollView, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import TrendingMovies from '../components/trendingMovies';
 import MovieList from '../components/movieList';
 import { fetchTopRatedMovies, fetchTrendingMovies, fetchUpcomingMovies } from '../api/moviedb';
-import { useNavigation } from '@react-navigation/native';
 import Loading from '../components/loading';
-import { styles } from '../theme';
-// import { getAuth, signOut } from "firebase/auth";
 import { auth } from '../firebaseConfig';
 import Header from '../components/header';
 
@@ -18,7 +15,6 @@ export default function HomeScreen() {
   const [upcoming, setUpcoming] = useState([]);
   const [topRated, setTopRated] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const auth = getAuth();
 
   const handleLogout = async () => {
     signOut(auth).then(() => {

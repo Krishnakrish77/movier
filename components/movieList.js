@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableWithoutFeedback, Image, Dimensions, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native';
-import { fallbackMoviePoster, image185, image342, poster342 } from '../api/moviedb';
+import { fallbackMoviePoster, image185 } from '../api/moviedb';
 import { styles } from '../theme';
 const {width, height} =  Dimensions.get('window');
 

@@ -1,14 +1,16 @@
-import { View, Text, Pressable, Image, TextInput } from 'react-native'
+import { View, Text, Pressable, Image, TextInput, Platform, Linking } from 'react-native'
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { styles } from '../theme';
+import { FontAwesome } from '@expo/vector-icons';
 import { firestoreDB } from '../firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 
-// subscribe for more videos like this :)
+const platform = Platform.OS;
+
 export default function SignUpScreen({ navigation: { navigate } }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -50,7 +52,7 @@ export default function SignUpScreen({ navigation: { navigate } }) {
     <View className="flex-1 bg-white">
       <SafeAreaView className="flex">
         <StatusBar style="light" />
-        <View className="flex-row justify-center py-3">
+        <View className="flex-row justify-center py-3 mt-4">
             <Image source={require('../assets/images/signup.png')} 
                 style={{width: 165, height: 110}} />
         </View>
@@ -58,7 +60,7 @@ export default function SignUpScreen({ navigation: { navigate } }) {
       <Text className="text-white text-3xl font-bold p-5 text-center">
           <Text style={styles.text}>M</Text><Text className="text-neutral-500">ovie</Text><Text style={styles.text}>R</Text>
         </Text>
-      <View className="flex-1 bg-white px-8 pt-8"
+      <View className="flex-1 bg-white w-full px-16 pt-10"
         style={{borderTopLeftRadius: 50, borderTopRightRadius: 50}}
       >
         <View className="form space-y-2">
@@ -87,7 +89,7 @@ export default function SignUpScreen({ navigation: { navigate } }) {
             <Pressable
                 className="py-3 bg-yellow-400 rounded-xl"
             >
-                <Text className="font-xl font-bold text-center text-gray-700" onPress={handleUserCreation} onClick={handleUserCreation}>
+                <Text className="text-xl font-bold text-center text-gray-700" onPress={handleUserCreation} onClick={handleUserCreation}>
                     Sign Up
                 </Text>
             </Pressable>
@@ -99,6 +101,11 @@ export default function SignUpScreen({ navigation: { navigate } }) {
             </Pressable>
         </View>
       </View>
+      { platform == 'web' && platform != 'ios' &&
+        <Pressable className='flex-row w-full bg-yellow-500 p-6 items-center justify-center' onPress={() => Linking.openURL('https://github.com/Krishnakrish77/movier/releases')}>
+            <Text className="font-semibold text-base text-gray-900">Get the Android app from </Text><Text className='font-bold text-base pr-2'>GitHub</Text><FontAwesome name="github" size={24} color="black" />
+        </Pressable>
+      }
     </View>
   )
 }
