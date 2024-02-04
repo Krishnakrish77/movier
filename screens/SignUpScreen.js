@@ -102,7 +102,7 @@ export default function SignUpScreen({ navigation: { navigate } }) {
         </View>
       </View>
       { platform == 'web' && platform != 'ios' &&
-        <Pressable className='flex-row w-full bg-yellow-500 p-6 items-center justify-center' onPress={() => Linking.openURL('https://github.com/Krishnakrish77/movier/releases')}>
+        <Pressable className='flex-row w-full bg-yellow-500 px-6 py-4 items-center justify-center' onPress={() => Linking.openURL('https://github.com/Krishnakrish77/movier/releases')}>
             <Text className="font-semibold text-base text-gray-900">Get the Android app from </Text><Text className='font-bold text-base pr-2'>GitHub</Text><FontAwesome name="github" size={24} color="black" />
         </Pressable>
       }
