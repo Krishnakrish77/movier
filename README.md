@@ -22,7 +22,7 @@ MovieR is an application that allows users to discover, search, and get informat
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/movier.git
+   git clone https://github.com/Krishnakrish77/movier.git
 2. Install dependencies:
 
     ```bash

@@ -16,6 +16,7 @@ import { firestoreDB } from '../firebaseConfig';
 import { collection, query, addDoc, onSnapshot, serverTimestamp, orderBy } from 'firebase/firestore';
 import YoutubePlayer from "react-native-youtube-iframe";
 import { CircularProgress } from 'react-native-circular-progress';
+import { Dropdown } from 'react-native-element-dropdown';
 
 const ios = Platform.OS == 'ios';
 const topMargin = ios? '':' mt-3';
@@ -31,7 +32,8 @@ export default function MovieScreen() {
   const [cast, setCast] = useState([]);
   const [similarMovies, setSimilarMovies] = useState([]);
   const [watchProviders, setWatchProviders] = useState([]);
-  const [trailer, setTrailer] = useState(null);
+  const [video, setVideo] = useState(null);
+  const [videoes, setVideos] = useState([]);
   const [groups, setGroups] = useState([]);
   const [isFavourite, toggleFavourite] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -87,9 +89,10 @@ export default function MovieScreen() {
     const data = await fetchMovieVideos(id);
     console.log('got movie videos');
     if(data && data.results) {
-        const trailerKey = data.results.find((item) => item.type === "Trailer" && item.site === "YouTube" && item.official);
-        if(trailerKey){
-          setTrailer(trailerKey.key);
+        const videos = data.results.filter((item) => item.site === "YouTube" && item.official == true);
+        if(videos){
+          setVideos(videos);
+          setVideo(videos[0].key)
         }
     }
   }
@@ -348,12 +351,25 @@ export default function MovieScreen() {
      </View>
 
       {/* trailer */}
-      { trailer &&  (
-      <View className="mt-2">
+      { videoes.length > 0 &&  (
+      <View className="mt-1">
+        <Dropdown
+          activeColor='#ccc'
+          style={{padding: 8, backgroundColor: 'rgb(64 64 64)'}}
+          selectedTextStyle={{color: 'white'}}
+          value={video}
+          labelField="label"
+          valueField="value"
+          data={videoes.map((video) => ({ label: video.name, value: video.key, }))} 
+          onChange={(videoId) => {
+            setVideo(videoId.value);
+          }}
+        />
         <YoutubePlayer
+                key={video}
                 height={260}
                 play={playing}
-                videoId={trailer}
+                videoId={video}
                 onChangeState={onStateChange}
         />
       </View>
