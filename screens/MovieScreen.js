@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
-import { HeartIcon, ShareIcon, PaperAirplaneIcon, XMarkIcon, CheckCircleIcon } from 'react-native-heroicons/solid';
+import { BookmarkIcon, ShareIcon, PaperAirplaneIcon, XMarkIcon, CheckCircleIcon } from 'react-native-heroicons/solid';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Cast from '../components/cast';
 import MovieList from '../components/movieList';
@@ -13,7 +13,7 @@ import Loading from '../components/loading';
 import WatchProviders from '../components/watchproviders';
 import { getAuth } from "firebase/auth";
 import { firestoreDB } from '../firebaseConfig';
-import { collection, query, addDoc, onSnapshot, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, addDoc, onSnapshot, serverTimestamp, orderBy, getDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import YoutubePlayer from "react-native-youtube-iframe";
 import { CircularProgress } from 'react-native-circular-progress';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -35,7 +35,7 @@ export default function MovieScreen() {
   const [video, setVideo] = useState(null);
   const [videoes, setVideos] = useState([]);
   const [groups, setGroups] = useState([]);
-  const [isFavourite, toggleFavourite] = useState(false);
+  const [isWatchListed, setIsWatchListed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [tvWatchProviders, setTvWatchProviders] = useState([]);
@@ -46,20 +46,21 @@ export default function MovieScreen() {
 
   useEffect(()=>{
     setLoading(true);
-    if(item.first_air_date){
+    if(item.first_air_date || item.type == 'Series'){
       setMediaType('tv');
+      isInWatchList(item.id, 'tv');
       getTvDetails(item.id);
       getTvWatchProviders(item.id);
     }
     else {
       setMediaType('movie');
+      isInWatchList(item.id, 'movie');
       getMovieDetials(item.id);
       getMovieCredits(item.id);
       getSimilarMovies(item.id);
       getMovieWatchProviders(item.id);
       getMovieVideos(item.id);
     }
-    
   },[item]);
 
   const getMovieDetials = async id=>{
@@ -197,6 +198,38 @@ export default function MovieScreen() {
         return [...prevSelected, groupId];
       }
     });
+  }
+  const isInWatchList = async(id, type) => {
+    let docSnap;
+    if(type == 'movie'){
+      docSnap = await getDoc(doc(firestoreDB, 'users', auth.currentUser.uid, 'watchlist', `M${id}`));
+    }
+    else {
+      docSnap = await getDoc(doc(firestoreDB, 'users', auth.currentUser.uid, 'watchlist', `T${id}`));
+    }
+    if (docSnap.exists()) {
+      setIsWatchListed(true);
+    }
+  }
+  const watchListHandler = async() => {
+    if (!isWatchListed) {
+      // Add the movie/series to user's watchlist
+      if(movie.id) {
+        await setDoc(doc(firestoreDB, 'users', auth.currentUser.uid, 'watchlist', `M${movie.id}`), { name: movie.title, type: 'Movie', status: "Watchlisted", rating: Math.round(movie.vote_average * 10), poster_path: movie.poster_path, watchListedAt: serverTimestamp() });
+      }
+      else {
+        await setDoc(doc(firestoreDB, 'users', auth.currentUser.uid, 'watchlist', `T${tv.id}`), { name: tv.name, type: 'Series', status: "Watchlisted", rating: Math.round(tv.vote_average * 10), poster_path: tv.poster_path, watchListedAt: serverTimestamp() });
+      }
+    } else {
+      // Remove the movie/series from the user's watchlist
+      if(movie.id) {
+        await deleteDoc(doc(firestoreDB, 'users', auth.currentUser.uid, 'watchlist', `M${movie.id}`));
+      }
+      else {
+        await deleteDoc(doc(firestoreDB, 'users', auth.currentUser.uid, 'watchlist', `T${tv.id}`));
+      }
+    }
+    setIsWatchListed(!isWatchListed);
   };
   return (
     <ScrollView 
@@ -210,8 +243,8 @@ export default function MovieScreen() {
                 <ChevronLeftIcon size="28" strokeWidth={2.5} color="white" />
             </Pressable>
 
-            <Pressable onPress={()=> toggleFavourite(!isFavourite)}>
-                <HeartIcon size="35" color={isFavourite? theme.background: 'white'} />
+            <Pressable onPress={()=> watchListHandler()}>
+                <BookmarkIcon size="35" color={isWatchListed? theme.background: 'white'} />
             </Pressable>
         </SafeAreaView>
         {
@@ -346,7 +379,7 @@ export default function MovieScreen() {
                 watchProviders.length>0 ? <WatchProviders watchproviders={watchProviders} /> : tvWatchProviders.length>0 ? <WatchProviders watchproviders={tvWatchProviders} /> : null
             }
             <Pressable className="p-3" onPress={shareToGroups}>
-                <ShareIcon size="26" color={isFavourite? theme.background: 'white'} />
+                <ShareIcon size="26" color={'white'} />
             </Pressable>
      </View>
 
@@ -358,6 +391,7 @@ export default function MovieScreen() {
           style={{padding: 8, backgroundColor: 'rgb(64 64 64)'}}
           selectedTextStyle={{color: 'white'}}
           value={video}
+          autoScroll={false}
           labelField="label"
           valueField="value"
           data={videoes.map((video) => ({ label: video.name, value: video.key, }))} 
