@@ -71,7 +71,7 @@ const ProfileScreen = () => {
           { editMode ? (
           <View className="flex-row items-center justify-center">
             <TextInput
-              className="p-2 text-gray-700 font-bold text-2xl"
+              className="p-2 w-2/3 text-gray-700 font-bold text-2xl text-center"
               value={displayName}
               onChangeText={(text) => setDisplayName(text)}
             />
