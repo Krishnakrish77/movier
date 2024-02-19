@@ -342,14 +342,14 @@ export default function MovieScreen() {
 
         
         {/* genres  */}
-        <View className="flex-row flex-wrap space-x-2">
+        <View className="flex-row flex-wrap">
             {
               movie?.genres ?
                 movie?.genres?.map((genre,index)=>{
                     let showDot = index+1 != movie.genres.length;
                     return (
                         <Text key={index} className="text-neutral-400 font-semibold text-base text-center">
-                            {genre?.name} {showDot? "•":null}
+                            {genre?.name} {showDot? " • ":null}
                         </Text>
                     )
                 }) : (tv?.genres ?
@@ -357,7 +357,7 @@ export default function MovieScreen() {
                   let showDot = index+1 != tv.genres.length;
                   return (
                       <Text key={index} className="text-neutral-400 font-semibold text-base text-center">
-                          {genre?.name} {showDot? "•":null}
+                          {genre?.name} {showDot? " • ":null}
                       </Text>
                   )
               }) : null)
