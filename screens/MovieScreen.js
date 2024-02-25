@@ -91,7 +91,7 @@ export default function MovieScreen() {
     console.log('got movie videos');
     if(data && data.results) {
         const videos = data.results.filter((item) => item.site === "YouTube" && item.official == true);
-        if(videos){
+        if(videos.length != 0){
           setVideos(videos);
           setVideo(videos[0].key)
         }

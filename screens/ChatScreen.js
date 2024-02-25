@@ -1,6 +1,6 @@
 // ChatScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Pressable, Platform } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Pressable, Platform, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { getAuth } from "firebase/auth";
 import { firestoreDB } from '../firebaseConfig';
 import { collection, query, addDoc, doc, onSnapshot, getDoc, orderBy } from 'firebase/firestore';
 import MessageCard from '../components/moviecard';
+import { UserCircleIcon } from 'react-native-heroicons/solid';
 
 const ios = Platform.OS === 'ios';
 const web = Platform.OS === 'web';
@@ -30,8 +31,23 @@ const ChatScreen = ({ route }) => {
     if(isFocused){
       getGroupName(route.params.groupId);
       const q = query(collection(firestoreDB, `groups/${route.params.groupId}/messages`), orderBy("sentAt", 'desc'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        setMessages(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const senderIds = new Set(snapshot.docs.map(doc => doc.data().senderId));
+      const senderProfilePicURLs = {};
+      await Promise.all(Array.from(senderIds).map(async (senderId) => {
+        const senderDoc = await getDoc(doc(firestoreDB, 'users', senderId));
+        if(senderDoc.exists()) {
+          senderProfilePicURLs[senderId] = senderDoc.data()?.providerData?.photoURL;
+        }
+        else {
+          alert("An unexpected error occured.")
+        }
+      }));
+      const updatedMessages = snapshot.docs.map((doc) => {
+        const messageData = doc.data();
+        return { id: doc.id, ...messageData, senderProfilePicURL: senderProfilePicURLs[messageData.senderId] };
+      });
+        setMessages(updatedMessages);
       });
       return () => {
         unsubscribe();
@@ -79,6 +95,34 @@ const ChatScreen = ({ route }) => {
     setNewMessage('');
   };
 
+  const renderItem = ({ item }) => (
+    <View>
+      <View className={item.senderId === auth.currentUser.uid ? 'self-end flex-row-reverse m-1' : 'self-start flex-row m-1'}>
+        {
+          item.senderProfilePicURL == null ? (
+          <View className='p-1'>
+            <UserCircleIcon size="40" strokeWidth={1} color="white" />
+          </View>
+          ) : (
+            <View className='p-1'>
+              <Image
+                source={{ uri: item.senderProfilePicURL }}
+                style={{ width: 40, height: 40, borderRadius: 25 }}
+              />
+            </View>
+          )
+        }
+        <View className="p-1 rounded-lg bg-zinc-100">
+          <Text className="text-sm text-black font-semibold">{item.sender}</Text>
+          <MessageCard item={item} />
+        </View>
+      </View>
+      <View className={item.senderId === auth.currentUser.uid ? 'flex-row self-end mr-14' : 'flex-row self-start ml-14'}>
+          <Text className="text-sm text-white">{item && timestamp(item.sentAt.seconds)}</Text>
+        </View>
+    </View>
+  );
+
   return (
     <View className="flex-1 bg-neutral-800">
       <SafeAreaView className={"absolute z-20 w-full flex-row bg-neutral-700 justify-between items-center px-4 "+topMargin}>
@@ -97,21 +141,9 @@ const ChatScreen = ({ route }) => {
       <FlatList
         className="mt-28"
         data={messages}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item, index) => index}
         inverted={true} // Display latest messages at the bottom
-        renderItem={({ item }) => (
-          <View>
-            <View className={item.senderId === auth.currentUser.uid ? 'rounded-lg bg-zinc-100 self-end m-1' : 'rounded-lg bg-zinc-100 self-start m-1'}>
-              <Text className="text-sm text-white bg-zinc-500 px-1 font-semibold">{item.sender}</Text>
-              <View className="p-1">
-                <MessageCard item={item}/>
-              </View>
-            </View>
-            <View className={item.senderId === auth.currentUser.uid ? 'self-end mr-1' : 'self-start ml-1'}>
-              <Text className="text-sm text-white">{item && timestamp(item.sentAt.seconds)}</Text>
-            </View>
-          </View>
-        )}
+        renderItem={renderItem}
       />
 
       <View className="flex-row items-center p-4 bg-neutral-700">
