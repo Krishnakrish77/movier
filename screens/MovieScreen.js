@@ -32,6 +32,7 @@ export default function MovieScreen() {
   const [cast, setCast] = useState([]);
   const [similarMovies, setSimilarMovies] = useState([]);
   const [watchProviders, setWatchProviders] = useState([]);
+  const [links, setLinks] = useState([]);
   const [video, setVideo] = useState(null);
   const [videoes, setVideos] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -101,6 +102,8 @@ export default function MovieScreen() {
     const data = await fetchMovieWatchProviders(id);
     console.log('got watchproviders');
 
+    const links = await getDoc(doc(firestoreDB, 'watchproviders', 'wp'));
+    setLinks(links.data());
     if(data && data.results.IN){
         let watchproviders = [...data.results.IN.buy || [] , ...data.results.IN.rent || [] , ...data.results.IN.flatrate || []]
         
@@ -120,6 +123,8 @@ export default function MovieScreen() {
   const getTvWatchProviders = async id=>{
     const data = await fetchTvWatchProviders(id);
     console.log('got tv watchproviders');
+    const links = await getDoc(doc(firestoreDB, 'watchproviders', 'wp'));
+    setLinks(links.data());
 
     if(data && data.results.IN){
         let watchproviders = [...data.results.IN.buy || [] , ...data.results.IN.rent || [] , ...data.results.IN.flatrate || []]
@@ -376,7 +381,7 @@ export default function MovieScreen() {
      </View>
      <View className="w-full flex-row justify-center items-center px-6">
             { 
-                watchProviders.length>0 ? <WatchProviders watchproviders={watchProviders} /> : tvWatchProviders.length>0 ? <WatchProviders watchproviders={tvWatchProviders} /> : null
+                watchProviders.length>0 ? <WatchProviders watchproviders={watchProviders} links={links} title={movie.title}/> : tvWatchProviders.length>0 ? <WatchProviders watchproviders={tvWatchProviders} links={links} title={tv.name}/> : null
             }
             <Pressable className="p-3" onPress={shareToGroups}>
                 <ShareIcon size="26" color={'white'} />

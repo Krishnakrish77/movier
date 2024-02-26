@@ -1,8 +1,19 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native'
+import { View, Text, ScrollView, Image, Dimensions, Linking, Pressable } from 'react-native'
 import React from 'react'
 import { fallbackWatchProviderImage, image185 } from '../api/moviedb'
 
-const WatchProviders = ({watchproviders}) => {
+const WatchProviders = ({watchproviders, links, title}) => {
+    const handleWatchProviderLink = async (provider_name) => {
+        const encodedTitle = encodeURIComponent(title); // Encode the movie title
+        var baseurl = links[provider_name]?.searchURL || links[provider_name]?.url || null
+        if(baseurl && links[provider_name]?.searchURL != null){
+            const url = `${baseurl}${encodedTitle}`; // Construct the URL with the encoded movie title
+            Linking.openURL(url); // Open the URL
+        }
+        else {
+            Linking.openURL(baseurl); // Open the URL
+        }
+    };
   return (
     <View className="my-6">
       <ScrollView 
@@ -13,9 +24,10 @@ const WatchProviders = ({watchproviders}) => {
           {
               watchproviders && watchproviders.map((watchprovider, index)=>{
                   return (
-                      <TouchableOpacity 
+                      <Pressable
                           key={index} 
-                          className="mx-2.5 items-center">
+                          className="mx-2.5 items-center"
+                          onPress={() => handleWatchProviderLink(watchprovider?.provider_name)}>
                           <View 
                               className="overflow-hidden rounded-full h-12 w-12 items-center border border-neutral-500">
                               <Image 
@@ -29,7 +41,7 @@ const WatchProviders = ({watchproviders}) => {
                                   watchprovider?.provider_name
                               }
                           </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                   )
               })
           }
