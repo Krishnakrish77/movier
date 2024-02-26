@@ -10,7 +10,7 @@ const WatchProviders = ({watchproviders, links, title}) => {
             const url = `${baseurl}${encodedTitle}`; // Construct the URL with the encoded movie title
             Linking.openURL(url); // Open the URL
         }
-        else {
+        else if(baseurl){
             Linking.openURL(baseurl); // Open the URL
         }
     };
