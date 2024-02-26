@@ -395,6 +395,7 @@ export default function MovieScreen() {
           activeColor='#ccc'
           style={{padding: 8, backgroundColor: 'rgb(64 64 64)'}}
           selectedTextStyle={{color: 'white'}}
+          selectedTextProps={{numberOfLines: 1}}
           value={video}
           autoScroll={false}
           labelField="label"
