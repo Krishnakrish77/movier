@@ -13,7 +13,7 @@ import Header from '../components/header';
 import Loading from '../components/loading';
 import { getAuth } from "firebase/auth";
 import { firestoreDB } from '../firebaseConfig';
-import { collection, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
 import { fallbackMoviePoster, image185 } from '../api/moviedb';
 import { CircularProgress } from 'react-native-circular-progress';
 
@@ -61,7 +61,7 @@ const WatchlistScreen = ({ }) => {
         <View className='flex-row items-center justify-between'>
           <Text className='text-white text-lg font-bold'>{item.name}</Text>
           <View className='self-end'>
-            <Menu onSelect={(value) => { if(value=='Remove') { alert(`${item.name} is removed from your watchlist`)} else {updateStatus(item.docId, value)}}}>
+            <Menu onSelect={async (value) => { if(value=='Remove') { await deleteDoc(doc(firestoreDB, 'users', auth.currentUser.uid, 'watchlist', item.docId)); alert(`${item.name} is removed from your watchlist`)} else {updateStatus(item.docId, value)}}}>
               <MenuTrigger>
                 <View>
                   <MaterialIcons name="more-vert" size={24} color="white" />
