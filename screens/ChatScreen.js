@@ -144,6 +144,7 @@ const ChatScreen = ({ route }) => {
         keyExtractor={(item, index) => index}
         inverted={true} // Display latest messages at the bottom
         renderItem={renderItem}
+        initialNumToRender={10}
       />
 
       <View className="flex-row items-center p-4 bg-neutral-700">
