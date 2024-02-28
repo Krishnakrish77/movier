@@ -17,6 +17,7 @@ import { app } from "../firebaseConfig";
 import GroupScreen from '../screens/GroupScreen';
 import ChatScreen from '../screens/ChatScreen';
 import GroupInfoScreen from '../screens/GroupInfoScreen';
+import WatchlistScreen from '../screens/WatchlistScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -88,6 +89,11 @@ export default function AppNavigation() {
           <MaterialCommunityIcons name="account-group" color={color} size={size} />
         ),}}  
         component={GroupScreen} />
+      <Drawer.Screen name="Watchlist"
+        options={{headerShown: false, drawerIcon: ({ color, size }) => (
+          <MaterialCommunityIcons name="bookmark-multiple" color={color} size={size} />
+        ),}}  
+        component={WatchlistScreen} />
       <Drawer.Screen name="Profile"
         options={{headerShown: false, drawerIcon: ({ color, size }) => (
           <MaterialCommunityIcons name="account" color={color} size={size} />

@@ -220,7 +220,7 @@ const GroupInfoScreen = () => {
                 { editMode ? (
                     <View className="flex-row py-2 items-center justify-center">
                         <TextInput
-                            className="font-bold text-2xl text-white"
+                            className="font-bold w-1/2 text-2xl text-white text-center"
                             value={newGroupName}
                             onChangeText={(text) => setNewGroupName(text)}
                         />

@@ -72,11 +72,11 @@ export default function HomeScreen() {
             { trending.length>0 && <TrendingMovies data={trending} /> }
 
             {/* upcoming movies row */}
-            { upcoming.length>0 && <MovieList title="Upcoming" data={upcoming} /> }
+            { upcoming.length>0 && <MovieList title="Upcoming" hideSeeAll={true} data={upcoming} /> }
             
 
             {/* top rated movies row */}
-            { topRated.length>0 && <MovieList title="Top Rated" data={topRated} /> }
+            { topRated.length>0 && <MovieList title="Top Rated" hideSeeAll={true} data={topRated} /> }
 
           </ScrollView>
           
