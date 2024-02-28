@@ -189,7 +189,7 @@ export default function MovieScreen() {
     alert("Shared!")
     toggleShareToGroups();
     return () => {
-        unsubscribe();
+        unsubscribeRef.current();
       };
 
   }

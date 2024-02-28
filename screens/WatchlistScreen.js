@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Image, Pressable } from 'react-native';
+import { View, Text, FlatList, Image, Pressable, Modal, Linking, ScrollView } from 'react-native';
 import {
   Menu,
   MenuProvider,
@@ -8,12 +8,12 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import { useNavigation } from '@react-navigation/native'
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Header from '../components/header';
 import Loading from '../components/loading';
 import { getAuth } from "firebase/auth";
 import { firestoreDB } from '../firebaseConfig';
-import { collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
 import { fallbackMoviePoster, image185 } from '../api/moviedb';
 import { CircularProgress } from 'react-native-circular-progress';
 
@@ -21,6 +21,9 @@ const WatchlistScreen = ({ }) => {
   const auth = getAuth();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [otherLinks, setOtherLinks] = useState([]);
+  const [bots, setBots] = useState([]);
   const [watchlist, setWatchlist] = useState([]);
 
   useEffect(() => {
@@ -35,14 +38,17 @@ const WatchlistScreen = ({ }) => {
     };
   }, []);
 
+  const getOtherLinks = async () => {
+    const links = await getDoc(doc(firestoreDB, 'watchproviders', 'others'));
+    setOtherLinks(links.data().Links);
+    setBots(links.data().Bots)
+  };
 
-  const removeFromWatchlist = async (movieId) => {
-    await firestore()
-      .collection('users')
-      .doc(userId)
-      .collection('watchlist')
-      .doc(movieId)
-      .delete();
+  const toggleOtherLinks = () => {
+    if(!isModalVisible){
+      getOtherLinks();
+    }
+    setModalVisible(!isModalVisible);
   };
 
   const updateStatus = async (id, status) => {
@@ -95,7 +101,7 @@ const WatchlistScreen = ({ }) => {
                   <>
                     <MenuOption value="Watchlisted" text="Watch Later" />
                     <MenuOption value="Watching" text="Watching" />
-                    <MenuOption value="Completed" text="Mark as Completed" />
+                    <MenuOption value="Completed" text="Completed" />
                     <MenuOption value="Remove" text="Remove from Watchlist" />
                   </>
                 )}
@@ -137,6 +143,9 @@ const WatchlistScreen = ({ }) => {
     <View className="flex-1 bg-neutral-800">
       <Header/>
       <Text className="text-white text-xl font-bold text-center mb-4">Your Watchlist</Text>
+      <Pressable className='z-10 absolute items-center justify-center bg-yellow-500 bottom-10 right-4 p-4 rounded-full' onPress={toggleOtherLinks}>
+        <MaterialCommunityIcons name="movie-search" size={24} color="white" />
+      </Pressable>
       {
           loading? (
             <Loading/>
@@ -155,6 +164,70 @@ const WatchlistScreen = ({ }) => {
             </Text>
           ))
       }
+      <Modal animationType="slide" 
+              transparent visible={isModalVisible}  
+              presentationStyle="overFullScreen" 
+              onRequestClose={toggleOtherLinks}
+              > 
+          <View className="flex-1 items-center justify-center bg-current"> 
+              <View className="py-6 items-center bg-white rounded-lg w-80 h-1/2">
+                <Text className="font-bold text-lg p-2">Find Movies/Series</Text>
+                <ScrollView>
+                <View className="px-4 items-center">
+                  <Text className='font-semibold pb-2'>Telegram Bots/Channels</Text>
+                  <View className='flex-row flex-wrap justify-center'>
+                    {
+                      bots.length > 0 &&
+                      bots.map((item, index) => {
+                        return (
+                        <Pressable key={item.name} className='rounded-lg justify-center items-center bg-gray-600 p-2 m-1 w-32 h-32' onPress={()=>Linking.openURL(item.link)}>
+                                 <Image
+                                   source={{uri: item.logo || "https://cdn-icons-png.flaticon.com/512/8636/8636861.png"}}
+                                   style={{width: 56, height: 56, borderRadius: 28}} 
+                                 />
+                                 <Text className="text-neutral-200 font-bold text-center" numberOfLines={1}>
+                                     {item?.name}
+                                 </Text>
+                                 <Text className="text-neutral-400 text-xs text-center" numberOfLines={2}>
+                                   {item?.description}
+                                 </Text>
+                            </Pressable>
+                      )})
+                  }
+                  </View>
+                </View>
+                <View className="items-center px-4">
+                  <Text className='flex-row font-semibold py-2'>Other Links</Text>
+                  <View className='flex-row flex-wrap justify-center'>
+                {
+                  otherLinks.length > 0 && 
+                  otherLinks.map((item, index) => {
+                    return (
+                      <Pressable key={index} className='rounded-lg justify-center items-center bg-gray-600 p-2 m-1 w-32 h-32' onPress={()=>Linking.openURL(item.link)}>
+                         <Image
+                            resizeMode = 'contain'
+                            source={{uri: item.logo || "https://cdn-icons-png.flaticon.com/512/8636/8636861.png"}}
+                            style={{width: 56, height: 56}} 
+                          />
+                          <Text className="text-neutral-200 font-bold text-center" numberOfLines={1}>
+                            {item?.name}
+                          </Text>
+                          <Text className="text-neutral-400 text-xs text-center" numberOfLines={2}>
+                            {item?.description}
+                          </Text>
+                        </Pressable>
+                    )
+                  })
+              }
+                </View>
+                </View>
+                </ScrollView>
+              </View>
+              <Pressable className="rounded-full bg-yellow-500 p-3 my-3" onPress={toggleOtherLinks}>
+                <MaterialIcons name="close" size={24} color="white" /> 
+              </Pressable>
+          </View> 
+      </Modal> 
     </View>
   );
 };
