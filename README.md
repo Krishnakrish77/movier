@@ -51,7 +51,7 @@ MovieR is an application that allows users to discover, search, and get informat
 
 - Add Movies/TV series and manage your watchlist.
 
-    <img src="screenshots/WatchlistScreen.jpg" alt="Chat Screen" width="300"/>
+    <img src="screenshots/WatchlistScreen.jpg" alt="Watchlist Screen" width="300"/>
 
 ## Author
 
