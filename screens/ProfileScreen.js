@@ -1,12 +1,12 @@
 // screens/ProfileScreen.js
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, Platform, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { UserCircleIcon, EnvelopeIcon } from 'react-native-heroicons/solid'
 import { MaterialIcons } from '@expo/vector-icons';
 import { getAuth, updateProfile } from "firebase/auth";
-import { getDownloadURL, getStorage, ref, uploadBytes, uploadString } from "firebase/storage"
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage"
 import { useNavigation } from '@react-navigation/native';
 import Header from '../components/header';
 import { collection, doc, getDocs, query, runTransaction, updateDoc, where } from 'firebase/firestore';

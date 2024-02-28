@@ -155,7 +155,7 @@ const WatchlistScreen = ({ }) => {
             <FlatList
               data={watchlist}
               renderItem={renderItem}
-              keyExtractor={item => item.id}
+              keyExtractor={(item) => item.id}
             />
           </MenuProvider>
           ) : (

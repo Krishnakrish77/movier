@@ -1,6 +1,6 @@
 # MovieR
 
-MovieR is an application that allows users to discover, search, and get information about movies and TV series. The app provides a user-friendly interface to explore a vast collection of movies, view details, and watch trailers. 
+MovieR is an application that allows users to discover, search, and get information about movies and TV series. The app provides a user-friendly interface to explore a vast collection of movies, view details, manage watchlists, and watch trailers. 
 
   <img src="screenshots/HomeScreen.jpg" alt="Home Screen" width="300"/>
 
@@ -11,11 +11,13 @@ MovieR is an application that allows users to discover, search, and get informat
 - **Detailed Information:** Get comprehensive details about each movie, including ratings, genres, and release information.
 - **Watch Trailers:** Watch trailers for movies directly within the app.
 - **Share Movies/Series:** Share the movies/series that you loved with your friends and family.
+- **Watchlists:** Add movies/series that you want to watch and manage your progress.
 
 ## Technologies Used
 
 - **Expo:** The app is built using the Expo Go framework for cross-platform development.
 - **Firebase:** Firebase is used for authentication and real-time data updates.
+- **Nativewind:** Nativewind is used for app styling.
 
 ## Installation
 
@@ -47,10 +49,9 @@ MovieR is an application that allows users to discover, search, and get informat
 
     <img src="screenshots/ChatScreen.jpg" alt="Chat Screen" width="300"/>
 
-## What's Cooking?
-- Movie Watchlist - Save your movies/series to watch later and track your movie watching progress
-- Watch Providers - Link to various watch providers
-- Avatars - Customize your user
+- Add Movies/TV series and manage your watchlist.
+
+    <img src="screenshots/WatchlistScreen.jpg" alt="Chat Screen" width="300"/>
 
 ## Author
 
